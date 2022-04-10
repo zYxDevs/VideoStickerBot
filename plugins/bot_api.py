@@ -31,17 +31,12 @@ class BotAPI:
         self.status = status
 
     async def params(self, pack_name, emojis, title):
-        # if not pack_name:
-        #     pack_name = self.PACK_NAME.format(self.user_id)
-        # if not title:
-        #     title = self.PACK_TITLE
-        params = {
+        return {
             'user_id': self.user_id,
             'name': pack_name,
             'emojis': emojis,
-            'title': title
+            'title': title,
         }
-        return params
 
     async def new_pack(self, params: dict, file: typing.BinaryIO):
         return await self.interact('new', params, file)
@@ -77,7 +72,10 @@ class BotAPI:
             total_packs = await database.get('users', self.user_id, 'packs')
             if not total_packs:  # Just in Case
                 total_packs = 1
-            await self.status.edit('Oh. Your pack {} is full. Lemme create a new one for you :)'.format(total_packs))
+            await self.status.edit(
+                f'Oh. Your pack {total_packs} is full. Lemme create a new one for you :)'
+            )
+
             total_packs += 1
             pack_name = self.NEW_PACK_NAME.format(total_packs, self.user_id)
             params.update({'name': pack_name})
@@ -97,10 +95,7 @@ class BotAPI:
             return False
         finally:
             if method == 'get':
-                if resp['ok']:
-                    return resp['result']['stickers'][-1]['file_id']
-                else:
-                    return False
+                return resp['result']['stickers'][-1]['file_id'] if resp['ok'] else False
         return True
 
     @staticmethod
