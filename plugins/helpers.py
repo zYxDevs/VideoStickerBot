@@ -17,17 +17,17 @@ class Helpers(BotAPI):
         data = await database.get('users', self.user_id)
         if not data:
             return False, False
-        tick = '✔'
-        cross = '✖️ '
         ask_emojis = 'Ask for Emojis '
         text = f'**Settings** \n\n'
         ask_emojis_db = data['ask_emojis']
         if ask_emojis_db:
+            tick = '✔'
             ask_emojis += tick
-            text += f"**Ask For Emojis** : True"
+            text += "**Ask For Emojis** : True"
         else:
+            cross = '✖️ '
             ask_emojis += cross
-            text += f"**Ask For Emojis** : False"
+            text += "**Ask For Emojis** : False"
         markup = InlineKeyboardMarkup([
             [InlineKeyboardButton(ask_emojis, callback_data="emojis")]
         ])
@@ -37,8 +37,7 @@ class Helpers(BotAPI):
     async def extract_emojis(text: str | Message) -> str:
         if isinstance(text, Message):
             text = text.text
-        emojis = ''.join(char for char in text if char in emoji.EMOJI_DATA)
-        return emojis
+        return ''.join(char for char in text if char in emoji.EMOJI_DATA)
 
     async def ask_for_emojis(self):
         emojis_msg = await self.client.ask(
@@ -76,10 +75,7 @@ class Helpers(BotAPI):
         info = await self.subshell(cmd)
         dim = info.split('x')
         dim = [int(x) for x in dim]
-        if dim[0] < dim[1]:
-            return False
-        else:
-            return True
+        return dim[0] >= dim[1]
 
     async def correct_the_size(self):
         cmd = self.ffprobe.format('format=size', self.output_file)
@@ -101,14 +97,10 @@ class Helpers(BotAPI):
 
     async def get_default_pack(self) -> tuple[bool, str, str]:
         packs = await database.get('users', self.user_id, 'packs')
-        if packs <= 1:
-            if not packs:
-                boo = False
-            else:
-                boo = True
-            return boo, self.PACK_NAME.format(self.user_id), self.PACK_TITLE
-        else:
+        if packs > 1:
             return True, self.NEW_PACK_NAME.format(packs, self.user_id), self.NEW_PACK_TITLE.format(packs)
+        boo = bool(packs)
+        return boo, self.PACK_NAME.format(self.user_id), self.PACK_TITLE
 
     @staticmethod
     async def send_webm(message: Message):
